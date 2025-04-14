@@ -1,7 +1,10 @@
 // main.go - Loop principal do jogo
 package main
 
-import "os"
+import (
+	"os"
+	"time"
+)
 
 func main() {
 	// Inicializa a interface (termbox)
@@ -20,9 +23,23 @@ func main() {
 		panic(err)
 	}
 
-	// Desenha o estado inicial do jogo
-	interfaceDesenharJogo(&jogo)
+	// (adicionado) Thread de atualizacao periodica 
+	// Atualiza a interface periodicamente para exibir movimento dos inimigos
+	go func() {
+		for {
+			time.Sleep(100 * time.Millisecond) // Taxa de atualização da interface
+			interfaceDesenharJogo(&jogo)
+		}
+	}()
 
+	// Thread que inicializa o comportamento dos inimigos 
+	go func() {
+		for {
+			iniciarMovimentoInimigos(&jogo)
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	
 	// Loop principal de entrada
 	for {
 		evento := interfaceLerEventoTeclado()
