@@ -23,6 +23,7 @@ const (
 	CorTexto          = termbox.ColorDarkGray
 	CorAmarelo 		  = termbox.ColorYellow
 	CorAzulClaro      = termbox.ColorLightBlue
+	CorRoxo		      = termbox.ColorLightMagenta
 )
 
 // EventoTeclado representa uma ação detectada do teclado (como mover, sair ou interagir)
