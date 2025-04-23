@@ -9,10 +9,8 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-// Define um tipo Cor para encapsuladar as cores do termbox
 type Cor = termbox.Attribute
 
-// Definições de cores utilizadas no jogo
 const (
 	CorPadrao     Cor = termbox.ColorDefault
 	CorCinzaEscuro    = termbox.ColorDarkGray
@@ -26,25 +24,21 @@ const (
 	CorRoxo		      = termbox.ColorLightMagenta
 )
 
-// EventoTeclado representa uma ação detectada do teclado (como mover, sair ou interagir)
 type EventoTeclado struct {
-	Tipo  string // "sair", "interagir", "mover"
-	Tecla rune   // Tecla pressionada, usada no caso de movimento
+	Tipo  string
+	Tecla rune
 }
 
-// Inicializa a interface gráfica usando termbox
 func interfaceIniciar() {
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
 }
 
-// Encerra o uso da interface termbox
 func interfaceFinalizar() {
 	termbox.Close()
 }
 
-// Lê um evento do teclado e o traduz para um EventoTeclado
 func interfaceLerEventoTeclado() EventoTeclado {
 	ev := termbox.PollEvent()
 	if ev.Type != termbox.EventKey {
@@ -59,52 +53,77 @@ func interfaceLerEventoTeclado() EventoTeclado {
 	return EventoTeclado{Tipo: "mover", Tecla: ev.Ch}
 }
 
-// Renderiza todo o estado atual do jogo na tela
 func interfaceDesenharJogo(jogo *Jogo) {
 	interfaceLimparTela()
 
-	// Desenha todos os elementos do mapa
 	for y, linha := range jogo.Mapa {
 		for x, elem := range linha {
 			interfaceDesenharElemento(x, y, elem)
 		}
 	}
 
-	// Desenha o personagem sobre o mapa
 	interfaceDesenharElemento(jogo.PosX, jogo.PosY, Personagem)
 
-	// Desenha a barra de status
 	interfaceDesenharBarraDeStatus(jogo)
 
-	// Força a atualização do terminal
 	interfaceAtualizarTela()
 }
 
-// Limpa a tela do terminal
 func interfaceLimparTela() {
 	termbox.Clear(CorPadrao, CorPadrao)
 }
 
-// Força a atualização da tela do terminal com os dados desenhados
 func interfaceAtualizarTela() {
 	termbox.Flush()
 }
 
-// Desenha um elemento na posição (x, y)
 func interfaceDesenharElemento(x, y int, elem Elemento) {
 	termbox.SetCell(x, y, elem.simbolo, elem.cor, elem.corFundo)
 }
 
-// Exibe uma barra de status com informações úteis ao jogador
 func interfaceDesenharBarraDeStatus(jogo *Jogo) {
-	// Linha de status dinâmica
-	for i, c := range jogo.StatusMsg {
-		termbox.SetCell(i, len(jogo.Mapa)+1, c, CorTexto, CorPadrao)
-	}
+    for i, c := range jogo.StatusMsg {
+        termbox.SetCell(i, len(jogo.Mapa)+1, c, CorTexto, CorPadrao)
+    }
 
-	// Instruções fixas
-	msg := "Use WASD para mover e E para interagir. ESC para sair."
-	for i, c := range msg {
-		termbox.SetCell(i, len(jogo.Mapa)+3, c, CorTexto, CorPadrao)
-	}
+    vida := "Vida: [ "
+    totalBlocos := 10
+    vidaPorBloco := 999 / totalBlocos // 999 é a vida máxima inicial
+    blocosCheios := jogo.VidaJogador / vidaPorBloco
+    if blocosCheios > totalBlocos {
+        blocosCheios = totalBlocos
+    }
+    for i := 0; i < totalBlocos; i++ {
+        if i < blocosCheios {
+            vida += "█"
+        } else {
+            vida += "░"
+        }
+        vida += " "
+    }
+    vida += "]"
+
+    for i, c := range vida {
+        termbox.SetCell(i, len(jogo.Mapa)+2, c, CorVerde, CorPadrao)
+    }
+
+    itens := "Itens: "
+    if jogo.TemArma {
+        itens += "🔫"
+    }
+    if jogo.TemChave {
+        itens += "🔑"
+    }
+    if !jogo.TemArma && !jogo.TemChave {
+        itens += "Nenhum"
+    }
+
+    for i, c := range itens {
+        termbox.SetCell(i, len(jogo.Mapa)+3, c, CorTexto, CorPadrao)
+    }
+
+    msg := "Use WASD para mover e E para interagir. ESC para sair."
+    for i, c := range msg {
+        termbox.SetCell(i, len(jogo.Mapa)+5, c, CorTexto, CorPadrao)
+    }
 }

@@ -23,20 +23,30 @@ const (
 
 // Atualiza a posição do personagem com base na tecla pressionada (WASD)
 func personagemMover(tecla rune, jogo *Jogo) {
-	dx, dy := 0, 0
-	switch tecla {
-	case 'w': dy = -1 // Move para cima
-	case 'a': dx = -1 // Move para a esquerda
-	case 's': dy = 1  // Move para baixo
-	case 'd': dx = 1  // Move para a direita
-	}
+    dx, dy := 0, 0
+    switch tecla {
+    case 'w': dy = -1 // Move para cima
+    case 'a': dx = -1 // Move para a esquerda
+    case 's': dy = 1  // Move para baixo
+    case 'd': dx = 1  // Move para a direita
+    }
 
-	nx, ny := jogo.PosX+dx, jogo.PosY+dy
-	// Verifica se o movimento é permitido e realiza a movimentação
-	if jogoPodeMoverPara(jogo, nx, ny) {
-		jogoMoverElemento(jogo, jogo.PosX, jogo.PosY, dx, dy)
-		jogo.PosX, jogo.PosY = nx, ny
-	}
+    nx, ny := jogo.PosX+dx, jogo.PosY+dy
+    // Verifica se o movimento é permitido
+    if jogoPodeMoverPara(jogo, nx, ny) {
+        // Verifica se há uma armadilha na célula de destino
+        if jogo.Mapa[ny][nx].simbolo == 'A' {
+            jogo.VidaJogador -= 100 // Reduz a vida do jogador em 100
+            if jogo.VidaJogador < 0 {
+                jogo.VidaJogador = 0
+            }
+            jogo.StatusMsg = "Você pisou em uma armadilha e perdeu 100 de vida!"
+        }
+
+        // Realiza a movimentação
+        jogoMoverElemento(jogo, jogo.PosX, jogo.PosY, dx, dy)
+        jogo.PosX, jogo.PosY = nx, ny
+    }
 }
 
 // Define o que ocorre quando o jogador pressiona a tecla de interação
@@ -45,7 +55,7 @@ func personagemMover(tecla rune, jogo *Jogo) {
 func personagemInteragir(jogo *Jogo) {
 	alvo := buscaElementoMaisProximo(jogo)
 	if alvo == nil {
-		jogo.StatusMsg = "Não há nada para interagir por perto."
+		jogo.StatusMsg = "Nao ha nada para interagir por perto."
 		return
 	}
 	switch alvo.Elemento {
@@ -80,25 +90,35 @@ func personagemInteragir(jogo *Jogo) {
 			jogo.StatusMsg = "Você precisa de uma chave para abrir esta porta."
 		}
 	default:
-		jogo.StatusMsg = "Você não pode interagir com esse elemento."
-	}
+		// Verifica se é um portal ativo
+        for i := range portais {
+            if portais[i].X == alvo.X && portais[i].Y == alvo.Y && portais[i].Ativo {
+                // Teleporta o personagem
+                jogo.PosX = portais[i].DestX
+                jogo.PosY = portais[i].DestY
+                jogo.StatusMsg = "Você usou o portal!"
+                return
+            }
+        }
+        jogo.StatusMsg = "Voce nao pode interagir com esse elemento."
+    }
 }
 
 
 // Processa o evento do teclado e executa a ação correspondente
 func personagemExecutarAcao(ev EventoTeclado, jogo *Jogo) bool {
-	switch ev.Tipo {
-	case "sair":
-		// Retorna false para indicar que o jogo deve terminar
-		return false
-	case "interagir":
-		// Executa a ação de interação
-		personagemInteragir(jogo)
-	case "mover":
-		// Move o personagem com base na tecla
-		personagemMover(ev.Tecla, jogo)
-	}
-	return true // Continua o jogo
+    if jogo.VidaJogador <= 0 {
+        return true // Não faz nada se estiver morto
+    }
+    switch ev.Tipo {
+    case "sair":
+        return false
+    case "interagir":
+        personagemInteragir(jogo)
+    case "mover":
+        personagemMover(ev.Tecla, jogo)
+    }
+    return true
 }
 
 //////////////////////////////////////////////////////////////////////
