@@ -31,12 +31,14 @@ func rotinaPortal(jogo *Jogo, p *portal) {
             if msg.Tipo == "Ativar" {
                 p.Ativo = true
                 jogo.Mapa[p.Y][p.X] = Elemento{'O', CorAzulClaro, CorPadrao, false, true}
+                jogo.Mapa[p.DestY][p.DestX] = Elemento{'O', CorAzulClaro, CorPadrao, false, true}
                 interfaceDesenharJogo(jogo)
             }
         case <-time.After(p.tempoAtivo):
             if p.Ativo {
                 p.Ativo = false
                 jogo.Mapa[p.Y][p.X] = Vazio
+                jogo.Mapa[p.DestY][p.DestX] = Vazio
                 interfaceDesenharJogo(jogo)
             }
         }
