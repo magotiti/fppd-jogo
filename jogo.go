@@ -22,10 +22,13 @@ type Jogo struct {
 	PosX, PosY     int          // posição atual do personagem
 	VidaJogador	   int			// vida atual do personagem
 	UltimoVisitado Elemento     // elemento que estava na posição do personagem antes de mover
-	StatusMsg      string       // mensagem para a barra de status
+	StatusMsg      [3]string       // mensagem para a barra de status
 	TemChave       bool         // flag que indica se o personagem possui a chave no inventário
 	TemArma        bool         // flag que indica se o personagem possui uma arma no inventário
 	Inimigos       []inimigo    // coleção para armazenar os inimigos ativos
+	BausAbertos int
+    ArmaGarantida bool
+	Pontuacao int
 }
 
 // Elementos visuais do jogo
@@ -138,4 +141,10 @@ func disparaAlarme(jogo *Jogo) {
 		default:
 		}
 	}
+}
+
+func adicionarMensagem(jogo *Jogo, msg string) {
+    jogo.StatusMsg[0] = jogo.StatusMsg[1]
+    jogo.StatusMsg[1] = jogo.StatusMsg[2]
+    jogo.StatusMsg[2] = msg
 }

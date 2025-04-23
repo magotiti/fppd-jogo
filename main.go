@@ -35,8 +35,9 @@ func main() {
 	}
 
     armadilhas := []armadilha{
-        NovaArmadilha(5, 5),
+        NovaArmadilha(8, 7),
         NovaArmadilha(12, 18),
+		NovaArmadilha(25, 3),
     }
     for i := range armadilhas {
         go rotinaArmadilha(&jogo, &armadilhas[i])
@@ -49,7 +50,7 @@ func main() {
 	for {
         if jogo.VidaJogador <= 0 {
             // Exibe mensagem final
-            jogo.StatusMsg = "Fim do jogo! Pressione R para reiniciar ou ESC para sair."
+            adicionarMensagem(&jogo, "Fim do jogo! Pressione R para reiniciar ou ESC para sair.")
             interfaceDesenharJogo(&jogo)
             // Espera até o usuário pressionar R ou ESC
             for {
@@ -60,8 +61,8 @@ func main() {
                 if evento.Tipo == "mover" && (evento.Tecla == 'r' || evento.Tecla == 'R') {
 					// Reinicia o jogo
 					jogo = jogoNovo()
-					jogo.Inimigos = nil // Limpa inimigos
-					jogo.Mapa = nil     // Limpa o mapa!
+					jogo.Inimigos = nil // Limpa inimigos (Não funciona)
+					jogo.Mapa = nil     // Limpa o mapa
 					if err := jogoCarregarMapa(mapaFile, &jogo); err != nil {
 						panic(err)
 					}

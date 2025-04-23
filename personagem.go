@@ -40,7 +40,7 @@ func personagemMover(tecla rune, jogo *Jogo) {
             if jogo.VidaJogador < 0 {
                 jogo.VidaJogador = 0
             }
-            jogo.StatusMsg = "Você pisou em uma armadilha e perdeu 100 de vida!"
+            adicionarMensagem(jogo, "Você pisou em uma armadilha e perdeu 100 de vida!")
         }
 
         // Realiza a movimentação
@@ -55,7 +55,7 @@ func personagemMover(tecla rune, jogo *Jogo) {
 func personagemInteragir(jogo *Jogo) {
 	alvo := buscaElementoMaisProximo(jogo)
 	if alvo == nil {
-		jogo.StatusMsg = "Nao ha nada para interagir por perto."
+		adicionarMensagem(jogo, "Nao ha nada para interagir por perto.")
 		return
 	}
 	switch alvo.Elemento {
@@ -66,28 +66,42 @@ func personagemInteragir(jogo *Jogo) {
 					// Dano de 33 na vida
 					jogo.Inimigos[i].Vida -= 33
 					if jogo.Inimigos[i].Vida <= 0 {
-						jogo.StatusMsg = "Você atacou e eliminou o inimigo!"
+						adicionarMensagem(jogo, "Você atacou e eliminou o inimigo!")
+						jogo.Pontuacao += 100
 						go func(enemy *inimigo) {
 							enemy.canalMapa <- Mensagem{Tipo: "Morreu!"}
 						}(&jogo.Inimigos[i])
-					} else {
-						jogo.StatusMsg = "Voce atacou o inimigo!"
+					
+						// Gerar 2 novos inimigos em posições aleatórias vazias
+						for n := 0; n < 2; n++ {
+							for {
+								x := rand.Intn(len(jogo.Mapa[0]))
+								y := rand.Intn(len(jogo.Mapa))
+								if jogo.Mapa[y][x] == Vazio {
+									novo := NovoInimigo(x, y)
+									jogo.Inimigos = append(jogo.Inimigos, novo)
+									jogo.Mapa[y][x] = Inimigo
+									go rotinaInimigo(jogo, &jogo.Inimigos[len(jogo.Inimigos)-1], len(jogo.Inimigos)-1)
+									break
+								}
+							}
+						}
 					}
 					break
 				}
 			}
 		} else {
-			jogo.StatusMsg = "Você precisa de uma arma para atacar o inimigo!"
+			adicionarMensagem(jogo, "Você precisa de uma arma para atacar o inimigo!")
 		}
 	case Bau:
 		abrirBau(jogo, alvo.X, alvo.Y)
 	case Porta:
 		if jogo.TemChave {
-			jogo.StatusMsg = "Você usou uma chave para abrir a porta!"
+			adicionarMensagem(jogo, "Você usou uma chave para abrir a porta!")
 			jogo.TemChave = false
 			jogo.Mapa[alvo.Y][alvo.X] = Vazio
 		} else {
-			jogo.StatusMsg = "Você precisa de uma chave para abrir esta porta."
+			adicionarMensagem(jogo, "Você precisa de uma chave para abrir esta porta.")
 		}
 	default:
 		// Verifica se é um portal ativo
@@ -96,11 +110,11 @@ func personagemInteragir(jogo *Jogo) {
                 // Teleporta o personagem
                 jogo.PosX = portais[i].DestX
                 jogo.PosY = portais[i].DestY
-                jogo.StatusMsg = "Você usou o portal!"
+                adicionarMensagem(jogo, "Você usou o portal!")
                 return
             }
         }
-        jogo.StatusMsg = "Voce nao pode interagir com esse elemento."
+        adicionarMensagem(jogo, "Voce nao pode interagir com esse elemento.")
     }
 }
 
@@ -190,30 +204,38 @@ func buscaElementoMaisProximo (jogo *Jogo) *elementoPosicao {
 //			   - Adiciona disparaAlarme;				
 //////////////////////////////////////////////////////////////////////
 func abrirBau(jogo *Jogo, x, y int) itemBau {
-	encontrou 	 := nadaEncontrado
+	encontrou := nadaEncontrado
+    jogo.BausAbertos++
+    totalBaus := 4 // tem que ajustar se mudar a quantidade de baús no mapa
+
 	temArma 	 := rand.Intn(100) < 33 // 33% chance de achar uma arma
 	temChave 	 := rand.Intn(100) < 33 // 33% chance de achar uma chave
-	temArmadilha := rand.Intn(100) < 80 // 33% chance de achar uma armadilha
+	temArmadilha := rand.Intn(100) < 75 // 75% chance de achar uma armadilha (alarme)
+
+	if jogo.BausAbertos == totalBaus && !jogo.ArmaGarantida {
+        temArma = true
+    }
 
 	if temArma && !jogo.TemArma {
-		jogo.StatusMsg = ("Parabens! Voce encontrou uma arma!")
+		adicionarMensagem(jogo, "Parabens! Voce encontrou uma arma!")
 		jogo.TemArma = true
+		jogo.ArmaGarantida = true
 		encontrou = encontrouArma
 	}
 	if temChave && !jogo.TemChave {
-		jogo.StatusMsg = ("Parabens! Voce encontrou uma chave!")
-		jogo.TemChave = true
-		if encontrou != encontrouArma {
-			encontrou = encontrouChave
-		}
-	}
+        adicionarMensagem(jogo, "Parabens! Voce encontrou uma chave!")
+        jogo.TemChave = true
+        if encontrou != encontrouArma {
+            encontrou = encontrouChave
+        }
+    }
 	if temArmadilha {
-		jogo.StatusMsg = ("Essa nao! Voce disparou uma armadilha!")
+		adicionarMensagem(jogo, "Essa nao! Voce disparou um alarme!")
 		disparaAlarme(jogo)
 	}
 
 	if !temArma && !temChave {
-		jogo.StatusMsg = ("O bau estava vazio...")
+		adicionarMensagem(jogo, "O bau estava vazio...")
 	}
 
 	jogo.Mapa[y][x] = Vazio

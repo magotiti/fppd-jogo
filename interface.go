@@ -6,6 +6,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/nsf/termbox-go"
 )
 
@@ -82,8 +84,15 @@ func interfaceDesenharElemento(x, y int, elem Elemento) {
 }
 
 func interfaceDesenharBarraDeStatus(jogo *Jogo) {
-    for i, c := range jogo.StatusMsg {
-        termbox.SetCell(i, len(jogo.Mapa)+1, c, CorTexto, CorPadrao)
+    for linha := 0; linha < 3; linha++ {
+        for i, c := range jogo.StatusMsg[linha] {
+            termbox.SetCell(i, len(jogo.Mapa)+1+linha, c, CorTexto, CorPadrao)
+        }
+		// Pontuação
+		pontuacao := fmt.Sprintf("Pontuacao: %d", jogo.Pontuacao)
+		for i, c := range pontuacao {
+			termbox.SetCell(i, len(jogo.Mapa)+7, c, CorAmarelo, CorPadrao)
+		}
     }
 
     vida := "Vida: [ "
@@ -104,7 +113,7 @@ func interfaceDesenharBarraDeStatus(jogo *Jogo) {
     vida += "]"
 
     for i, c := range vida {
-        termbox.SetCell(i, len(jogo.Mapa)+2, c, CorVerde, CorPadrao)
+        termbox.SetCell(i, len(jogo.Mapa)+5, c, CorVerde, CorPadrao)
     }
 
     itens := "Itens: "
@@ -119,11 +128,11 @@ func interfaceDesenharBarraDeStatus(jogo *Jogo) {
     }
 
     for i, c := range itens {
-        termbox.SetCell(i, len(jogo.Mapa)+3, c, CorTexto, CorPadrao)
+        termbox.SetCell(i, len(jogo.Mapa)+ 6, c, CorTexto, CorPadrao)
     }
 
     msg := "Use WASD para mover e E para interagir. ESC para sair."
     for i, c := range msg {
-        termbox.SetCell(i, len(jogo.Mapa)+5, c, CorTexto, CorPadrao)
+        termbox.SetCell(i, len(jogo.Mapa)+ 9, c, CorTexto, CorPadrao)
     }
 }
