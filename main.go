@@ -59,10 +59,9 @@ func main() {
                     return
                 }
                 if evento.Tipo == "mover" && (evento.Tecla == 'r' || evento.Tecla == 'R') {
-					// Reinicia o jogo
 					jogo = jogoNovo()
-					jogo.Inimigos = nil // Limpa inimigos (Não funciona)
-					jogo.Mapa = nil     // Limpa o mapa
+					jogo.Inimigos = nil // Limpa todos os inimigos existentes
+					jogo.Mapa = nil     // Limpa o mapa antigo
 					if err := jogoCarregarMapa(mapaFile, &jogo); err != nil {
 						panic(err)
 					}
