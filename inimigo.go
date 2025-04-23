@@ -245,11 +245,11 @@ func (enemy *inimigo) morrerERespawnar(jogo *Jogo) bool {
 	mapaLeituraLock.Lock()
 	defer mapaLeituraLock.Unlock()
 
-	if enemy.X >= 0 && enemy.Y >= 0 &&
-		enemy.Y < len(jogo.Mapa) && enemy.X < len(jogo.Mapa[enemy.Y]) {
+	if enemy.X >= 0 && enemy.Y >= 0 && enemy.Y < len(jogo.Mapa) && enemy.X < len(jogo.Mapa[enemy.Y]) {
 		if jogo.Mapa[enemy.Y][enemy.X] == Inimigo {
 			jogo.Mapa[enemy.Y][enemy.X] = Vazio
 		}
+		inicializarInimigos(jogo)
 	}
 
 	enemy.Ativo = false

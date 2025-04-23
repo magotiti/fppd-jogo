@@ -71,21 +71,6 @@ func personagemInteragir(jogo *Jogo) {
 						go func(enemy *inimigo) {
 							enemy.canalMapa <- Mensagem{Tipo: "Morreu!"}
 						}(&jogo.Inimigos[i])
-					
-						// Gerar 2 novos inimigos em posições aleatórias vazias
-						for n := 0; n < 2; n++ {
-							for {
-								x := rand.Intn(len(jogo.Mapa[0]))
-								y := rand.Intn(len(jogo.Mapa))
-								if jogo.Mapa[y][x] == Vazio {
-									novo := NovoInimigo(x, y)
-									jogo.Inimigos = append(jogo.Inimigos, novo)
-									jogo.Mapa[y][x] = Inimigo
-									go rotinaInimigo(jogo, &jogo.Inimigos[len(jogo.Inimigos)-1], len(jogo.Inimigos)-1)
-									break
-								}
-							}
-						}
 					}
 					break
 				}
