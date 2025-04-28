@@ -25,7 +25,9 @@ type Jogo struct {
 	StatusMsg      string       // mensagem para a barra de status
 	TemChave       bool         // flag que indica se o personagem possui a chave no inventário
 	TemArma        bool         // flag que indica se o personagem possui uma arma no inventário
-	Inimigos       []inimigo    // coleção para armazenar os inimigos ativos
+	Inimigos       []inimigo    // colecao para armazenar os inimigos ativos
+	Portais        []portal		// colecao para armazenar os portais ativos
+	Armadilhas     []armadilha	// colecao para armazenar as armadilhas ativos
 }
 
 // Elementos visuais do jogo
@@ -36,9 +38,9 @@ var (
 	Vegetacao  = Elemento{'♣', CorVerde, CorPadrao, false, false}
 	Vazio      = Elemento{' ', CorPadrao, CorPadrao, false, false}
 	Bau        = Elemento{'⌂', CorAmarelo, CorPadrao, false, true}
-	Porta      = Elemento{'╬', CorAzulClaro, CorFundoParede, true, true}
 	Chave      = Elemento{'✒', CorAmarelo, CorPadrao, false, true}
-	Arma       = Elemento{'⚔', CorCinzaEscuro, CorPadrao, false, true}
+	Portal     = Elemento{'O', CorRoxo, CorPadrao, false, true}
+	Armadilha  = Elemento{'A', CorVermelho, CorPadrao, false, false}
 )
 
 var mapaLeituraLock sync.Mutex
@@ -46,6 +48,10 @@ var mapaLeituraLock sync.Mutex
 // Cria e retorna uma nova instância do jogo
 func jogoNovo() Jogo {
 	return Jogo{UltimoVisitado: Vazio}
+}
+
+func (jogo *Jogo) Perdeu() bool {
+	return jogo.VidaJogador <= 0
 }
 
 // Lê um arquivo texto linha por linha e constrói o mapa do jogo
@@ -82,6 +88,13 @@ func jogoCarregarMapa(nome string, jogo *Jogo) error {
 				jogo.PosX, jogo.PosY, jogo.VidaJogador = x, y, 999
 			case Bau.simbolo:
 				e = Bau
+			case Portal.simbolo:
+				portal := NovoPortal(x, y, jogo)
+				jogo.Portais = append(jogo.Portais, portal)
+			case Armadilha.simbolo:
+				e = Armadilha
+				armadilha := NovaArmadilha(x, y)
+				jogo.Armadilhas = append(jogo.Armadilhas, armadilha)
 			}
 			linhaElems = append(linhaElems, e)
 		}

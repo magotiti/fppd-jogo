@@ -35,7 +35,7 @@ func personagemMover(tecla rune, jogo *Jogo) {
     // Verifica se o movimento é permitido
     if jogoPodeMoverPara(jogo, nx, ny) {
         // Verifica se há uma armadilha na célula de destino
-        if jogo.Mapa[ny][nx].simbolo == 'A' {
+        if jogo.Mapa[ny][nx] == Armadilha {
             jogo.VidaJogador -= 100 // Reduz a vida do jogador em 100
             if jogo.VidaJogador < 0 {
                 jogo.VidaJogador = 0
@@ -63,7 +63,7 @@ func personagemInteragir(jogo *Jogo) {
 		if jogo.TemArma {
 			for i := range jogo.Inimigos {
 				if jogo.Inimigos[i].X == alvo.X && jogo.Inimigos[i].Y == alvo.Y && jogo.Inimigos[i].Ativo {
-					// Dano de 33 na vida
+					// dano de 33 na vida
 					jogo.Inimigos[i].Vida -= 33
 					if jogo.Inimigos[i].Vida <= 0 {
 						jogo.StatusMsg = "Você atacou e eliminou o inimigo!"
@@ -81,25 +81,26 @@ func personagemInteragir(jogo *Jogo) {
 		}
 	case Bau:
 		abrirBau(jogo, alvo.X, alvo.Y)
-	case Porta:
-		if jogo.TemChave {
-			jogo.StatusMsg = "Você usou uma chave para abrir a porta!"
-			jogo.TemChave = false
-			jogo.Mapa[alvo.Y][alvo.X] = Vazio
-		} else {
-			jogo.StatusMsg = "Você precisa de uma chave para abrir esta porta."
-		}
+	case Portal:
+		// verifica se é um portal ativo
+		for i := range jogo.Portais {
+			if jogo.Portais[i].X == alvo.X && jogo.Portais[i].Y == alvo.Y && jogo.Portais[i].Ativo {
+				// teleporta o personagem
+				msg := Mensagem{
+				Tipo    : "Teleporte!",
+				OrigemX : jogo.PosX,
+				OrigemY : jogo.PosY,
+				}
+		
+				select {
+				case jogo.Portais[i].canalMapa <- msg:
+				default:
+				}
+				jogo.StatusMsg = "Voce usou o portal!"
+				return
+				}
+			}
 	default:
-		// Verifica se é um portal ativo
-        for i := range portais {
-            if portais[i].X == alvo.X && portais[i].Y == alvo.Y && portais[i].Ativo {
-                // Teleporta o personagem
-                jogo.PosX = portais[i].DestX
-                jogo.PosY = portais[i].DestY
-                jogo.StatusMsg = "Você usou o portal!"
-                return
-            }
-        }
         jogo.StatusMsg = "Voce nao pode interagir com esse elemento."
     }
 }
