@@ -194,7 +194,8 @@ func abrirBau(jogo *Jogo, x, y int) itemBau {
 	encontrou 	 := nadaEncontrado
 	temArma 	 := rand.Intn(100) < 33 // 33% chance de achar uma arma
 	temChave 	 := rand.Intn(100) < 33 // 33% chance de achar uma chave
-	temArmadilha := rand.Intn(100) < 80 // 33% chance de achar uma armadilha
+	temArmadilha := rand.Intn(100) < 80 // 80% chance de achar uma armadilha
+	temCura		 := rand.Intn(100) < 50 // 50% chance de achar curativo
 
 	if temArma && !jogo.TemArma {
 		jogo.StatusMsg = ("Parabens! Voce encontrou uma arma!")
@@ -215,6 +216,10 @@ func abrirBau(jogo *Jogo, x, y int) itemBau {
 
 	if !temArma && !temChave {
 		jogo.StatusMsg = ("O bau estava vazio...")
+	}
+	if temCura {
+		jogo.VidaJogador += 200	
+		jogo.StatusMsg = ("Voce achou um curativo! Recebeu 200 de vida")
 	}
 
 	jogo.Mapa[y][x] = Vazio
